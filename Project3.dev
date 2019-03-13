@@ -51,7 +51,7 @@ AutoIncBuildNr=0
 SyncProduct=1
 
 [Unit1]
-FileName=tp2_visibilidade.cpp
+FileName=Projeto.cpp
 CompileCpp=1
 Folder=Project3
 Compile=1

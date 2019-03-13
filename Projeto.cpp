@@ -31,9 +31,9 @@ GLfloat  incZoom=3;
 GLfloat  raio=0.5;
 GLfloat  angxy = 0;
 GLfloat a, b, c = 0;
-GLfloat x, y, z = 5;
-
-
+GLfloat x, z = 5;
+GLfloat y = 1;
+static GLfloat giro = 0.0;
 
 
 
@@ -44,8 +44,9 @@ GLboolean   frenteVisivel=1;
 static GLuint     faceC[] = {8,9, 10,  11};
 static GLuint     faceA[] = {0, 3, 2, 1};
 static GLuint     faceB[] = {4, 5, 6, 7};
-static GLuint     faceD[] = {12, 15, 14, 13};
-
+static GLuint     faceD[] = {12, 13, 14, 15};
+static GLuint	  chao[] = {16, 17, 18, 19};
+static GLuint	  tecto[] = {20, 21, 22, 23};
 
 
 GLfloat tam=2.0;
@@ -61,17 +62,25 @@ static GLfloat vertices[]={
         0,  15, 15,	// 6 
         0,  0,15,	// 7 
 	//……………………………………………………… faceC
-        tam,  0,  tam,	// 8 
-        2*tam,  0, tam,	// 9 
-        2*tam,  tam, tam,	// 10 
-         tam,  tam,  tam,	// 11
+        0,  0,  15,	 // 8 
+        0,  15, 15,	 // 9 
+        15,  15, 15, // 10 
+        15,  0,  15, // 11
 	//---------------------- face D
-		tam, 0, -tam,	//12
-		2*tam, 0, -tam,	//13
-		2*tam, tam, -tam, //14
-		tam, tam, -tam,  //15
-	
-		
+		15, 15, 0,	//12
+		15, 0, 0,	//13
+		15, 0, 15, //14
+		15, 15, 15,  //15
+	//---------------------- chao primeiro andar
+		0, 0, 0, //16
+		0, 0, 15, //17
+		15, 0, 15, //18
+		15, 0, 0, //19
+   //-------------------------- teto da casa
+   		0, 15, 0, //20
+   		0, 15, 15, //21
+   		15, 15, 15, //22
+   		15, 15, 0, //23
 	
 		  
 	
@@ -93,36 +102,42 @@ static GLfloat normais[] = {
        0.0,  1.0,  0.0,
        0.0,  1.0,  0.0,
        0.0,  1.0,  0.0,
-    //--------------------------------------
-};
-//------------------------------------------------------------ Cores
-static GLfloat cores[]={
-	//…………………………………………………………………………………………………… x=tam (Esquerda) - Red
+    
+}; 
+
+static GLfloat cores[] = {
+	//…………………………………………………………………………………………………… faceA
 	  1.0,  0.0, 0.0,	// 0 
       1.0,  0.0, 0.0,	// 1 
       1.0,  1.0, 0.0,	// 2 
       1.0,  1.0, 0.0,	// 3 
-	//…………………………………………………………………………………………………… x=2*tam (Direita) - Green
+	//…………………………………………………………………………………………………… faceB
 	  0.0,  1.0, 1.0,	// 4 
       0.0,  1.0, 1.0,	// 5 
       0.0,  1.0, 0.0,	// 6 
       0.0,  1.0, 0.0,	// 7 
-	//…………………………………………………………………………………………………… y=tam (Cima) - Blue
+	//…………………………………………………………………………………………………… faceC
 	  0.0,  0.0, 1.0,	// 8 
       0.0,  0.0, 1.0,	// 9 
       1.0,  0.0, 1.0,	// 10 
       1.0,  0.0, 1.0,	// 11 
-    //--------------------------------------
-	  0.0,  0.0, 1.0,	// 8 
+       //-------------------------------------- faceD
+      0.0, 0.0, 0.0,     //8
       0.0,  0.0, 1.0,	// 9 
       1.0,  0.0, 1.0,	// 10 
-      1.0,  0.0, 1.0,	// 11 	
-      
-    
-}; 
+      1.0,  0.0, 1.0,	// 11 
+    //-------------------------------------- chao
+	  1.0,  0.1, 0.6,	// 12 
+      1.0,  0.2, 0.0,	// 13 
+      1.0,  0.3, 0.4,	// 14 
+      1.0,  0.4, 0.3,	//  15	
+    //-------------------------------------- teto
+      0.9, 0.3, 0.9, // 16
+      0.9, 0.4, 0.8, //17
+      0.9, 0.5, 0.7, //18
+      0.9, 0.6, 0.6, //19
 
-
-
+};
 
 
 
@@ -137,8 +152,8 @@ void inicializa(void)
 	glEnable(GL_DEPTH_TEST);	//………………………………………………………………………………Profundidade
 	glShadeModel(GL_SMOOTH);	//………………………………………………………………………………Interpolacao de cores	
 
-	glEnable(GL_CULL_FACE);		//………………………………………………………………………………Faces visiveis
-	glCullFace(GL_BACK);		//………………………………………………………………………………Mostrar so as da frente
+	//glEnable(GL_CULL_FACE);		//………………………………………………………………………………Faces visiveis
+	//glCullFace(GL_BACK);		//………………………………………………………………………………Mostrar so as da frente
 		
 	glVertexPointer(3, GL_FLOAT, 0, vertices); //………………………………………Vertex arrays
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -150,123 +165,169 @@ void inicializa(void)
 
 
 
-void drawEixos()
-{	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Eixo X
-	glColor4f(RED);
-	glBegin(GL_LINES);
-		glVertex3i( 0, 0, 0); 
-		glVertex3i(10, 0, 0); 
-	glEnd();
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Eixo Y
-	glColor4f(GREEN);
-	glBegin(GL_LINES);
-		glVertex3i(0,  0, 0); 
-		glVertex3i(0, 10, 0); 
-	glEnd();
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Eixo Z
-	glColor4f(BLUE);
-	glBegin(GL_LINES);
-		glVertex3i( 0, 0, 0); 
-		glVertex3i( 0, 0,10); 
-	glEnd();
 
-}	
 
 
 
 
 void drawScene(){
 	
-	//=================================================== Qual o lado ?
-    if (frenteVisivel)
+
+   /* if (frenteVisivel)
 	    glCullFace(GL_BACK);  //glFrontFace(GL_CW);
 	else
-	    glCullFace(GL_FRONT);  //glFrontFace(GL_CCW);
-
+	    glCullFace(GL_FRONT);  //glFrontFace(GL_CCW); */
 	
-	//==================================== MESA	
-	//glColorPointer(3, GL_FLOAT, 0, cor);	 podia ser modificada a cor !
-    /*glPushMatrix();	
+
+		
+		glDrawElements(GL_POLYGON, 4, GL_UNSIGNED_INT, faceA);
+		
+		glDrawElements(GL_POLYGON, 4, GL_UNSIGNED_INT, faceB);
+		
+		glDrawElements(GL_POLYGON, 4, GL_UNSIGNED_INT, faceC);
+		
+		glDrawElements(GL_POLYGON, 4, GL_UNSIGNED_INT, faceD);
+		
+		glDrawElements(GL_POLYGON, 4, GL_UNSIGNED_INT, chao);
+		
+		glDrawElements(GL_POLYGON, 4, GL_UNSIGNED_INT, tecto);
+		                                
+/*
+	glPopMatrix();
+	
+	
 		//?? 
 		//?? direita
-		//glTranslatef(2.0,2.0,2.0);*/
-		glColor4f(RED);
-		glDrawElements(GL_POLYGON, 4, GL_UNSIGNED_INT, faceA);
-		glColor4f(GREEN);
-		glDrawElements(GL_POLYGON, 4, GL_UNSIGNED_INT, faceB);
-		/*
-		glDrawElements(GL_POLYGON, 4, GL_UNSIGNED_INT, faceC);
-		glDrawElements(GL_POLYGON, 4, GL_UNSIGNED_INT, faceD);
-	*/
-	glPopMatrix();
-	glColor4f(YELLOW);
+		//glTranslatef(2.0,2.0,2.0);*/	glColor4f(YELLOW);
 	glPushMatrix();				//==================================== Primeiro degrau
-		glTranslatef(2.5,0.25,5);
+		glTranslatef(2.5,0.25,2);
 		glScalef(5,0.5,1);
 		glutSolidCube(1);
 	glPopMatrix();
 	glPushMatrix();
 		glColor4f(BLUE);
-		glTranslatef(2.5,0.75,6);
+		glTranslatef(2.5,0.75,3);
 		glScalef(5,0.5,1);
 		glutSolidCube(1);
 	glPopMatrix();
 	glPushMatrix();
 		glColor4f(YELLOW);
-		glTranslatef(2.5,1.25,7);
+		glTranslatef(2.5,1.25,4);
 		glScalef(5,0.5,1);
 		glutSolidCube(1);
 	glPopMatrix();
 	glPushMatrix();
 		glColor4f(BLUE);
-		glTranslatef(2.5,1.75,8);
+		glTranslatef(2.5,1.75,5);
 		glScalef(5,0.5,1);
 		glutSolidCube(1);
 	glPopMatrix();
 	glPushMatrix();
 		glColor4f(YELLOW);
-		glTranslatef(2.5,2.25,9);
+		glTranslatef(2.5,2.25,6);
 		glScalef(5,0.5,1);
 		glutSolidCube(1);
 	glPopMatrix();
 	glPushMatrix();
 		glColor4f(BLUE);
-		glTranslatef(2.5,2.75,10);
+		glTranslatef(2.5,2.75,7);
 		glScalef(5,0.5,1);
 		glutSolidCube(1);
 	glPopMatrix();
 	glPushMatrix();
 		glColor4f(YELLOW);
-		glTranslatef(2.5,3.25,11);
+		glTranslatef(2.5,3.25,8);
 		glScalef(5,0.5,1);
 		glutSolidCube(1);
 	glPopMatrix();
-
-	
+	glPushMatrix();
+		glColor4f(BLUE);
+		glTranslatef(2.5,3.75,9);
+		glScalef(5,0.5,1);
+		glutSolidCube(1);
+	glPopMatrix();
+	glPushMatrix();
+		glColor4f(YELLOW);
+		glTranslatef(2.5,4.25,10);
+		glScalef(5,0.5,1);
+		glutSolidCube(1);
+	glPopMatrix();
+	glPushMatrix();
+		glColor4f(BLUE);
+		glTranslatef(2.5,4.75,11);
+		glScalef(5,0.5,1);
+		glutSolidCube(1);
+	glPopMatrix();
+	glPushMatrix();
+		glColor4f(YELLOW);
+		glTranslatef(2.5,5.25,12);
+		glScalef(5,0.5,1);
+		glutSolidCube(1);
+	glPopMatrix();
+	glPushMatrix();
+		glColor4f(BLUE);
+		glTranslatef(2.5,5.75,13);
+		glScalef(5,0.5,1);
+		glutSolidCube(1);
+	glPopMatrix();
+	glPushMatrix();		// ultimo degrau
+		glColor4f(YELLOW);
+		glTranslatef(2.5,6.25,14);
+		glScalef(5,0.5,2);
+		glutSolidCube(1);
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(9, 4.5, 8);
+		glColor4f(1.0, 0.6, 0.8, 1);
+		glTranslatef(0, 2, 0);
+		glRotatef(giro, 0, 1, 0); // definindo o giro em torno do eixo y;
+		glRotatef(25, 1, 0, 0);  //25 graus de rotação para o lado;
+		glTranslatef(0, -2, 0);
+		glutSolidSphere(0.2, 200, 200); //desenhar candeeiro
+		glColor4f(1.0, 1.0, 1.0, 1);
+		glutWireSphere(0.5, 10, 10); // armação de fora
+		glTranslatef(0, 1, 0);
+		glScalef(0.02,2,0.02);
+		glutSolidCube(1);
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(10, 6.75, 7.5);
+		glScalef(10, 0.5, 15);	
+		glColor4f(0.4, 0.4, 0.4, 1);
+		glutSolidCube(1);
+		
+	glPopMatrix();
+}
+void girodisp(void){
+	giro += 3;
+	if (giro > 360.0){
+		giro -= 360.00;
+	}                                                                
+		
+	glutPostRedisplay();    
 }
 
 void display(void){
   	
-	//================================================================= APaga ecran/profundidade
+
 	 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	
-	//================================================================= NAO MOFIFICAR
-	glViewport (0, 0, wScreen, hScreen);								// ESQUECER PoR AGORA
-	glMatrixMode(GL_PROJECTION);										// ESQUECER PoR AGORA
-	glLoadIdentity();													// ESQUECER PoR AGORA
-	gluPerspective(angZoom, (float)wScreen/hScreen, 0.1, 3*zC);			// ESQUECER PoR AGORA
-	glMatrixMode(GL_MODELVIEW);											// ESQUECER PoR AGORA	
-	glLoadIdentity();													// ESQUECER PoR AGORA
-	//================================================================= NAO MOFIFICAR
+
+	glViewport (0, 0, wScreen, hScreen);								
+	glMatrixMode(GL_PROJECTION);										
+	glLoadIdentity();													
+	gluPerspective(angZoom, (float)wScreen/hScreen, 0.1, 3*zC);			
+	glMatrixMode(GL_MODELVIEW);											
+	glLoadIdentity();													
+	
 
 
 	//-------------------------------------------------------------- observador
-	gluLookAt(x,1,z, a, 1, c, 0, 1, 0);
+	gluLookAt(x,y,z, a, y, c, 0, 1, 0);
 
 	//…………………………………………………………………………………………………………………………………………………………Objectos/modelos
-	drawEixos(); 
+	
 	drawScene(); 	
 	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Actualizacao
@@ -275,47 +336,31 @@ void display(void){
 
 
 //======================================================= EVENTOS
-void keyboard(unsigned char key, int x, int y){
+void keyboard(unsigned char key, int xx, int yy){
 	
 	
 	switch (key) {
-	case 'f':
-	case 'F':
-		frenteVisivel=!frenteVisivel;
-		glutPostRedisplay();
-		break;
-
-	case 'A':
-	case 'a':
-		//??
-		glutPostRedisplay();
-	break;
-
 	case 'S':
 	case 's':
-		//??
+		y-=0.5;
 		glutPostRedisplay();
 	break;
 
-	case 'e':
-	case 'E':
-		//??
+	case 'w':
+	case 'W':
+		y+=0.5;
 		glutPostRedisplay();
 	break;
-
-	case 'd':
-	case 'D':
-		//??
-		glutPostRedisplay();
-	break;
-
-
-
-
 	
 //--------------------------- Escape
 	case 27:
-		exit(0);
+		exit(0);     
+	case 'f':
+	case 'F':
+		giro+=1;
+		glutPostRedisplay();
+		break;
+
 		break;	
   }
 
@@ -325,23 +370,19 @@ void keyboard(unsigned char key, int x, int y){
 
 void teclasNotAscii(int key, int xx, int yy){
  
-		if(key == GLUT_KEY_UP){
+	if(key == GLUT_KEY_UP){
+			x = a;
+			z = c;
+		}
 		
-			x = a ;
-			z = c	;
+	 if(key == GLUT_KEY_DOWN){
+			a = x + raio*cos(angxy-3.14159);
+			c = z + raio*sin(angxy-3.14159);
+			x = a;
+			z = c;
+			
 		}
-		/*
-		if(key == GLUT_KEY_DOWN){
-			x -= a;
-			z -=c;
-		}
-		*/
-		/*	
-		if (obsP[1]>yC)
-			obsP[1]=yC;
-		if (obsP[1]<-yC)
-			obsP[1]=-yC;
-	*/
+								
 		if (key == GLUT_KEY_LEFT){
 			angxy-=0.1;
 			
@@ -353,28 +394,26 @@ void teclasNotAscii(int key, int xx, int yy){
 		a = x + raio*cos(angxy);
 		c = z + raio*sin(angxy);
 		printf("%f, %f\n", a, c);
-		/*
-		obsP[0]=rVisao*cos(aVisao);
-		obsP[2]=rVisao*sin(aVisao);
-	*/
-
 	glutPostRedisplay();	
 
 }
+				  
+		
+		
 
 
-//======================================================= MAIN
-//======================================================= MAIN
 int main(int argc, char** argv){
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH );
 	glutInitWindowSize (wScreen, hScreen); 
 	glutInitWindowPosition (300, 100); 
-	glutCreateWindow (" |Observador:'SETAS'|        |Andar-'Cima'|        |Rodar -'e/d'| ");
+	glutCreateWindow (" |Andar-'Cima' 'Baixo'|    |Rodar -'Esquerda/Direita'|   |Para Cima -'W'| |Para Baixo -'S'| ");
   
 	inicializa();
-	
+	glutIdleFunc(girodisp);   
+
+
 	glutSpecialFunc(teclasNotAscii); 
 	glutDisplayFunc(display); 
 	glutKeyboardFunc(keyboard);
@@ -384,5 +423,4 @@ int main(int argc, char** argv){
 	return 0;
 }
 
-
-
+              
