@@ -32,13 +32,20 @@ GLfloat x, z = 5;
 GLfloat y = 1;
 static GLfloat giro = 0.0;
 
-
-
-
+//================================ Material
+GLfloat	Amb [3] = { 0.8, 0.8, 0.8 };
+GLfloat Dif [3] = { 0.8, 0.8, 0.8 };
+GLfloat Spec [3] = { 0.8, 0.8, 0.8 };
+GLuint Coef = 1;
+//================================ Material Gold
+GLfloat ambg[3] = {0.24725, 0.1995, 0.0745};
+GLfloat difg[3] = {0.75164, 0.60648, 0.22648};
+GLfloat specg[3] = {0.628281, 0.555802, 0.366065};
+GLfloat coefg = 0.4;
 
 //=========================================================== PAREDES
 GLboolean   frenteVisivel=1;
-static GLuint     faceC[] = {8,9, 10,  11};
+static GLuint     faceC[] = {8,11, 10,  9};
 static GLuint     faceA[] = {0, 3, 2, 1};
 static GLuint     faceB[] = {4, 5, 6, 7};
 static GLuint     faceD[] = {12, 13, 14, 15};
@@ -49,6 +56,22 @@ static GLuint	  tecto[] = {20, 21, 22, 23};
 //============================================================ Texturas
 GLuint   texture[4];
 RgbImage imag;
+GLfloat luzGlobalCorAmb[3] ={0.5, 0.5, 0.5};
+//============================================== Luz 0;
+GLfloat pos[3] = {0 , 0, 0};
+GLfloat ambiente[4] = {1.0, 1.0, 1.0, 1};
+GLfloat difuse[4] = {1.0,1.0,1.0,1}; 
+GLfloat	constante = 0.05; 
+GLfloat linear = 0.005;
+GLfloat quadr = 0.05;
+
+//==========================================
+GLfloat posicao[4]= {0, 0, 0, 1.0};
+GLfloat dir[4]= {0, -100.0, 0, 1.0};
+GLfloat exponent = 2;
+GLfloat cut = 80;
+GLfloat difusa[4] = {1.0,1.0,1.0,1};
+GLfloat especular[4] = {1.0,1.0,1.0,1};  
 
 
 static GLfloat vertices[]={
@@ -73,7 +96,7 @@ static GLfloat vertices[]={
 		15, 0, 15, //14
 		15, 15, 15,  //15
 	//---------------------- chao primeiro andar
-		0, 0, 0, //16
+		0, 0, 0, //16 
 		0, 0, 15, //17
 		15, 0, 15, //18
 		15, 0, 0, //19
@@ -87,26 +110,40 @@ static GLfloat vertices[]={
 	
 }; 
 
-static GLfloat normais[] = {
-    //…………………………………………………………………………………………………… x=tam (Esquerda)
-	  1.0,  0.0,  0.0,
-      1.0,  0.0,  0.0,
-      1.0,  0.0,  0.0,
-      1.0,  0.0,  0.0,
-	//…………………………………………………………………………………………………… x=tam (Direita)
+static GLfloat normais[] = { //normais da casa
+    //…………………………………………………………………………………………………… FaceA
+	  0.0,  0.0,  1.0,
+      0.0,  0.0,  1.0,
+      0.0,  0.0,  1.0,
+      0.0,  0.0,  1.0,
+	//…………………………………………………………………………………………………… FaceB
 	   1.0,  0.0,  0.0,
        1.0,  0.0,  0.0,
        1.0,  0.0,  0.0,
        1.0,  0.0,  0.0,
-	//…………………………………………………………………………………………………… y=tam (Cima)
-	   0.0,  1.0,  0.0,
-       0.0,  1.0,  0.0,
-       0.0,  1.0,  0.0,
-       0.0,  1.0,  0.0,
-    
+	//…………………………………………………………………………………………………… FaceC
+	   0.0,  0.0,  -1.0,
+       0.0,  0.0,  -1.0,
+       0.0,  0.0,  -1.0,
+       0.0,  0.0,  -1.0,
+    //====================================== FaceD
+	   -1.0, 0.0, 0.0,
+	   -1.0, 0.0, 0.0,
+	   -1.0, 0.0, 0.0,
+	   -1.0, 0.0, 0.0,
+	//======================================= Chao
+	    0.0, 1.0, 0.0,
+	    0.0, 1.0, 0.0,
+	    0.0, 1.0, 0.0,
+	    0.0, 1.0, 0.0,
+	//======================================= Teto
+	    0.0, -1.0, 0.0,
+	    0.0, -1.0, 0.0,
+	    0.0, -1.0, 0.0,
+	    0.0, -1.0, 0.0,
 }; 
 
-static GLfloat cores[] = {
+static GLfloat cores[] = {  //cores das paredes, chao e teto
 	//…………………………………………………………………………………………………… faceA
 	  1.0,  0.0, 0.0,	// 0 
       1.0,  0.0, 0.0,	// 1 
@@ -123,20 +160,20 @@ static GLfloat cores[] = {
       1.0,  0.0, 1.0,	// 10 
       1.0,  0.0, 1.0,	// 11 
        //-------------------------------------- faceD
-      0.0, 0.0, 0.0,     //8
-      0.0,  0.0, 1.0,	// 9 
-      1.0,  0.0, 1.0,	// 10 
-      1.0,  0.0, 1.0,	// 11 
+      0.0, 0.0, 0.0,     //12
+      0.0,  0.0, 1.0,	// 13
+      1.0,  0.0, 1.0,	// 14 
+      1.0,  0.0, 1.0,	// 15 
     //-------------------------------------- chao
-	  1.0,  0.1, 0.6,	// 12 
-      1.0,  0.2, 0.0,	// 13 
-      1.0,  0.3, 0.4,	// 14 
-      1.0,  0.4, 0.3,	//  15	
+	  1.0,  0.1, 0.6,	// 16 
+      1.0,  0.2, 0.0,	// 17 
+      1.0,  0.3, 0.4,	// 18 
+      1.0,  0.4, 0.3,	//  19	
     //-------------------------------------- teto
-      0.9, 0.3, 0.9, // 16
-      0.9, 0.4, 0.8, //17
-      0.9, 0.5, 0.7, //18
-      0.9, 0.6, 0.6, //19
+      0.9, 0.3, 0.9, // 20
+      0.9, 0.4, 0.8, //21
+      0.9, 0.5, 0.7, //22
+      0.9, 0.6, 0.6, //23
 
 };
 static GLfloat arrayTexture[]={ 
@@ -190,16 +227,41 @@ void initTexturas()
 		imag.ImageData()); 
 	
 }
+void initLight(){
+	glEnable (GL_LIGHTING);
+	glEnable(GL_LIGHT0);	
+	/*
+	glLightfv(GL_LIGHT0, GL_POSITION, pos );
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambiente );
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, difuse );
+	glLightf (GL_LIGHT0, GL_CONSTANT_ATTENUATION, constante);
+	glLightf (GL_LIGHT0, GL_LINEAR_ATTENUATION, linear ) ;
+	glLightf (GL_LIGHT0, GL_QUADRATIC_ATTENUATION, quadr );
+	*/	//…………………………………………………………………………………………………………………………………………… Ambiente
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, luzGlobalCorAmb);
+	//…………………………………………………………………………………………………………………………………………… Foco
+	glLightfv(GL_LIGHT0, GL_POSITION,      pos );
+	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, dir);
+	glLightf (GL_LIGHT0, GL_SPOT_EXPONENT , exponent);
+    glLightf (GL_LIGHT0, GL_SPOT_CUTOFF,   cut);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE,       difusa );   
+	glLightfv(GL_LIGHT0, GL_SPECULAR,      especular  );
+	
+}
+
 
 //================================================================================
 //=========================================================================== INIT
+
 void inicializa(void)
 {
+	
+	
 	glClearColor(BLACK);		//………………………………………………………………………………Apagar
 	initTexturas();
 	glEnable(GL_DEPTH_TEST);	//………………………………………………………………………………Profundidade
 	glShadeModel(GL_SMOOTH);	//………………………………………………………………………………Interpolacao de cores	
-		
+	
 	glVertexPointer(3, GL_FLOAT, 0, vertices); //………………………………………Vertex arrays
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glNormalPointer(GL_FLOAT, 0, normais);
@@ -209,20 +271,54 @@ void inicializa(void)
     glTexCoordPointer(2, GL_FLOAT, 0, arrayTexture); 
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 }
-
-
-
-
-
-
-
-
-void drawScene(){
-	
-	glPushMatrix();
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D,texture[0]);
+void Material(){
+		glMaterialfv ( GL_FRONT, GL_AMBIENT, Amb );
+		glMaterialfv ( GL_FRONT, GL_DIFFUSE, Dif );
+		glMaterialfv ( GL_FRONT, GL_SPECULAR, Spec );
+		glMaterialf ( GL_FRONT, GL_SHININESS, Coef );
+}
+void Gold(){
+		glMaterialfv ( GL_FRONT_AND_BACK, GL_AMBIENT, ambg );
+		glMaterialfv ( GL_FRONT_AND_BACK, GL_DIFFUSE, difg );
+		glMaterialfv ( GL_FRONT_AND_BACK, GL_SPECULAR, specg );
+		glMaterialf ( GL_FRONT_AND_BACK, GL_SHININESS, coefg );
+}
+void desenhaMesa(){
 		
+		glBegin(GL_QUADS);
+		  	glVertex3f( 0.5,  0.5, 0.5 ); //face canto esquerdo//
+			glVertex3f( 0.5,  0.5, -0.5 ); 
+			glVertex3f( 0.5,  -0.5, -0.5 ); 
+		    glVertex3f( 0.5,  -0.5,  0.5); 
+		glEnd();
+
+		glBegin(GL_QUADS);		  	
+			glVertex3f( 0.5,  0.5, 0.5 ); //face cima//
+			glVertex3f( 0.5,  0.5, -0.5 ); 
+		    glVertex3f( -0.5,  0.5, -0.5 ); 
+		    glVertex3f( -0.5,  0.5,  0.5); 
+		glEnd();
+		glBegin(GL_QUADS);
+		 	glVertex3f( 0.5,  0.5, -0.5 ); //face frente;
+			glVertex3f( 0.5,  -0.5, -0.5 ); 
+			glVertex3f( -0.5,  -0.5, -0.5 ); 
+			glVertex3f( -0.5,  0.5,  -0.5); 
+		glEnd();
+		glBegin(GL_QUADS);
+		  	glVertex3f( -0.5,  0.5, 0.5 ); //face direita;//
+			glVertex3f( -0.5,  -0.5, 0.5 ); 
+			glVertex3f( -0.5,  -0.5, -0.5 ); 
+			glVertex3f( -0.5,  0.5,  -0.5); 
+		glEnd();
+}
+void drawScene(){
+
+	Material();
+
+	glPushMatrix();   //desenha paredes, chao e teto da casa.
+		glEnable(GL_TEXTURE_2D); 
+		glBindTexture(GL_TEXTURE_2D,texture[0]);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glDrawElements(GL_POLYGON, 4, GL_UNSIGNED_INT, faceA);
 		glDisable(GL_TEXTURE_2D);
 		
@@ -240,8 +336,8 @@ void drawScene(){
 		                                
 	for (int i = 0; i < 13; i++){   //faz escada
 		glPushMatrix();				
-			glColor4f(1.0, 0.6, 0.8, 1);
 			glEnable(GL_TEXTURE_2D);
+			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 			glBindTexture(GL_TEXTURE_2D,texture[1]);
 			glTranslatef(2.5,0.25+i*0.5,i+2);
 			glScalef(5,0.5,1);
@@ -281,33 +377,11 @@ void drawScene(){
 		glPopMatrix();
 	}
 	glPushMatrix(); //desenha mesa;
-		glColor4f(0.5, 0.5, 0.5, 1);
+		Gold();
 		glTranslatef(10,0.5,8);
 		glScalef(2.2,1,1.5);
-		glBegin(GL_QUADS);
-		  	glVertex3f( 0.5,  0.5, 0.5 ); //face canto esquerdo//
-			glVertex3f( 0.5,  0.5, -0.5 ); 
-			glVertex3f( 0.5,  -0.5, -0.5 ); 
-		    glVertex3f( 0.5,  -0.5,  0.5); 
-		glEnd();
-		glBegin(GL_QUADS);
-		  	glVertex3f( 0.5,  0.5, 0.5 ); //face cima//
-			glVertex3f( 0.5,  0.5, -0.5 ); 
-		    glVertex3f( -0.5,  0.5, -0.5 ); 
-		     glVertex3f( -0.5,  0.5,  0.5); 
-		glEnd();
-		glBegin(GL_QUADS);
-		 	glVertex3f( 0.5,  0.5, -0.5 ); //face frente;
-			glVertex3f( 0.5,  -0.5, -0.5 ); 
-			glVertex3f( -0.5,  -0.5, -0.5 ); 
-			glVertex3f( -0.5,  0.5,  -0.5); 
-		glEnd();
-		glBegin(GL_QUADS);
-		  	glVertex3f( -0.5,  0.5, 0.5 ); //face direita;//
-			glVertex3f( -0.5,  -0.5, 0.5 ); 
-			glVertex3f( -0.5,  -0.5, -0.5 ); 
-			glVertex3f( -0.5,  0.5,  -0.5); 
-		glEnd();
+		desenhaMesa();
+
 	glPopMatrix();
 	glPushMatrix();// desenha ecrã
 		glColor4f(0.8, 0.2, 0.2, 1);
@@ -326,6 +400,7 @@ void drawScene(){
 		    glVertex3f( -0.5,  0.5,  0.5); 
 		glEnd();
 		glEnable(GL_TEXTURE_2D);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 		glBindTexture(GL_TEXTURE_2D,texture[2]);
 		glBegin(GL_QUADS);
 			glTexCoord2f(1.0f,1.0f);	glVertex3f( 0.5,  0.5, 0.5 ); //face tras
@@ -352,7 +427,7 @@ void drawScene(){
 			glVertex3f( -0.5,  -0.5, -0.5 ); 
 			glVertex3f( -0.5,  0.5,  -0.5); 
 		glEnd();
-		glTranslatef(0,0,-0.60);//parte de tras do ecrã do computador
+		glTranslatef(0,0,-0.60);//parte de tras do computador
 		glScalef(1.4,1.2,1.2);
 		glBegin(GL_QUADS);
 		  	glVertex3f( 0.25,  0.25, 0.25 ); //face canto esquerdo//
@@ -429,17 +504,19 @@ void drawScene(){
 	glPopMatrix();
 	glPushMatrix();
 		glTranslatef(9, 4.5, 8);
-		glColor4f(1.0, 0.6, 0.8, 1);
 		glTranslatef(0, 2, 0);
+		
 		glRotatef(giro, 0, 1, 0); // definindo o giro em torno do eixo y;
 		glRotatef(25, 1, 0, 0);  //25 graus de rotação para o lado;
 		glTranslatef(0, -2, 0);
 		glutSolidSphere(0.2, 200, 200); //desenhar candeeiro
-		glColor4f(0, 0, 0, 1);
+		initLight(); // desenha luz;
 		glutWireSphere(0.5, 10, 10); // armação de fora
 		glTranslatef(0, 1, 0);
 		glScalef(0.02,2,0.02);
+		
 		glutSolidCube(1);
+		
 	glPopMatrix();
 	glPushMatrix();
 		
@@ -650,6 +727,7 @@ void drawScene(){
 		glEnd();
 	glPopMatrix();
 	glPushMatrix();       //perna 4
+		
 		glColor4f(0,1,0,1);
 		glTranslatef(8,7.7,8);
 		glScalef(0.5,1.5,0.5);
@@ -722,9 +800,10 @@ void display(void){
 	gluLookAt(x,y,z, a, y, c, 0, 1, 0);
 
 	//…………………………………………………………………………………………………………………………………………………………Objectos/modelos
+
 	
 	drawScene(); 	
-	
+	glEnable(GL_NORMALIZE);
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Actualizacao
 	glutSwapBuffers();
 }
