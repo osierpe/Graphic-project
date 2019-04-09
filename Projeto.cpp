@@ -22,7 +22,7 @@ GLint		wScreen=800, hScreen=600;		//.. janela (pixeis)
 GLfloat		xC=10.0, yC=10.0, zC=10.0;		//.. Mundo  (unidades mundo)
 
 //------------------------------------------------------------ Observador 
-GLfloat  rVisao=20, aVisao=0.5*PI, incVisao=0.05;
+GLint    msec     = 100;
 GLfloat  angZoom=90;
 GLfloat  incZoom=3;
 GLfloat  raio=0.5;
@@ -58,7 +58,7 @@ static GLuint	  tecto[] = {20, 21, 22, 23};
 
 
 //============================================================ Texturas
-GLuint   texture[7];
+GLuint   texture[8];
 RgbImage imag;
 GLfloat luzGlobalCorAmb[3] ={0.5, 0.5, 0.5};
 //============================================== Luz 0;
@@ -73,7 +73,7 @@ GLfloat quadr = 0.5;
 GLfloat posicao[4]= {0, 0, 0, 1.0};
 GLfloat dir[4]= {0, -1.0, 0, 1.0};
 GLfloat exponent = 1;
-GLfloat cut = 80;
+GLfloat cut = 70;
 GLfloat difusa[4] = {1.0,1.0,1.0,1};
 GLfloat especular[4] = {1.0,1.0,1.0,1};  
 
@@ -274,9 +274,46 @@ void initTexturas()
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, 
 		imag.GetNumCols(),
 		imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
-		imag.ImageData()); 
-	
-	
+		imag.ImageData());
+	//--------------------------------------------------- tea pot 
+	glGenTextures(1, &texture[5]);
+	glBindTexture(GL_TEXTURE_2D, texture[5]);
+	imag.LoadBmpFile("metal.bmp");
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, 
+		imag.GetNumCols(),
+		imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+		imag.ImageData());
+	//--------------------------------------------------- plastic
+		glGenTextures(1, &texture[6]);
+	glBindTexture(GL_TEXTURE_2D, texture[6]);
+	imag.LoadBmpFile("plastic.bmp");
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, 
+		imag.GetNumCols(),
+		imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+		imag.ImageData());
+	//----------------------------------------------------- keyboard
+	glGenTextures(1, &texture[7]);
+	glBindTexture(GL_TEXTURE_2D, texture[7]);
+	imag.LoadBmpFile("keyboard.bmp");
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, 
+		imag.GetNumCols(),
+		imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+		imag.ImageData());
 }
 void initLight(){
 	glEnable (GL_LIGHTING);
@@ -532,12 +569,16 @@ void drawScene(){
 			glVertex3f( 0.5,  -0.5, -0.5 ); 
 		    glVertex3f( 0.5,  -0.5,  0.5); 
 		glEnd();
+		glEnable(GL_TEXTURE_2D); 
+		glBindTexture(GL_TEXTURE_2D,texture[7]);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glBegin(GL_QUADS);
-		  	glVertex3f( 0.5,  0.5, 0.5 ); //face cima//
-			glVertex3f( 0.5,  0.5, -0.5 ); 
-		    glVertex3f( -0.5,  0.5, -0.5 ); 
-		     glVertex3f( -0.5,  0.5,  0.5); 
+		glTexCoord2f(0.0f,0.0f);  	glVertex3f( 0.5,  0.5, 0.5 ); //face cima//
+		glTexCoord2f(0.0f,1.0f);	glVertex3f( 0.5,  0.5, -0.5 ); 
+		glTexCoord2f(1.0f,1.0f);    glVertex3f( -0.5,  0.5, -0.5 ); 
+		glTexCoord2f(1.0f,0.0f);     glVertex3f( -0.5,  0.5,  0.5); 
 		glEnd();
+		glDisable(GL_TEXTURE_2D);
 		glBegin(GL_QUADS);
 		  	glVertex3f( 0.5,  0.5, 0.5 ); //face tras
 			glVertex3f( 0.5,  -0.5, 0.5 ); 
@@ -568,7 +609,7 @@ void drawScene(){
 		glTranslatef(0, 2, 0);
 		
 		glRotatef(giro, 0, 1, 0); // definindo o giro em torno do eixo y;
-		glRotatef(20, 1, 0, 0);  //25 graus de rotação para o lado;
+		glRotatef(20, 1, 0, 0);  //20 graus de rotação para o lado;
 		glTranslatef(0, -2, 0);
 		materialcand();
 		glutSolidSphere(0.2, 200, 200); //desenhar candeeiro
@@ -580,6 +621,7 @@ void drawScene(){
 		glutSolidCube(1);
 		
 	glPopMatrix();
+	Material();
 	glPushMatrix();
 		glEnable(GL_TEXTURE_2D);
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -627,45 +669,48 @@ void drawScene(){
 	glPopMatrix();
 	
 	glPushMatrix();
-		glColor4f(0.8,0,1,1);
+		glEnable(GL_TEXTURE_2D);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		glBindTexture(GL_TEXTURE_2D,texture[6]);
 		glTranslatef(9,8.5,9.5);
 		glScalef(3,0.3,4);
 		glBegin(GL_QUADS); 				//tampo mesa
-		  	glVertex3f( 0.5,  0.5, 0.5 ); //face canto esquerdo//
-			glVertex3f( 0.5,  0.5, -0.5 ); 
-			glVertex3f( 0.5,  -0.5, -0.5 ); 
-		    glVertex3f( 0.5,  -0.5,  0.5); 
+		glTexCoord2f(1.0f,1.0f);  	glVertex3f( 0.5,  0.5, 0.5 ); //face canto esquerdo//
+		glTexCoord2f(1.0f,0.0f);	glVertex3f( 0.5,  0.5, -0.5 ); 
+		glTexCoord2f(0.0f,0.0f);	glVertex3f( 0.5,  -0.5, -0.5 ); 
+		glTexCoord2f(0.0f,1.0f);    glVertex3f( 0.5,  -0.5,  0.5); 
 		glEnd();
 		glBegin(GL_QUADS);
-		  	glVertex3f( 0.5,  0.5, 0.5 ); //face cima//
-			glVertex3f( 0.5,  0.5, -0.5 ); 
-		    glVertex3f( -0.5,  0.5, -0.5 ); 
-		     glVertex3f( -0.5,  0.5,  0.5); 
+		glTexCoord2f(1.0f,1.0f);  	glVertex3f( 0.5,  0.5, 0.5 ); //face cima//
+		glTexCoord2f(1.0f,0.0f);	glVertex3f( 0.5,  0.5, -0.5 ); 
+		glTexCoord2f(0.0f,0.0f);    glVertex3f( -0.5,  0.5, -0.5 ); 
+		glTexCoord2f(0.0f,1.0f);     glVertex3f( -0.5,  0.5,  0.5); 
 		glEnd();
 		glBegin(GL_QUADS);
-		  	glVertex3f( 0.5,  0.5, 0.5 ); //face tras
-			glVertex3f( 0.5,  -0.5, 0.5 ); 
-		   	glVertex3f( -0.5,  -0.5, 0.5 ); 
-		  	glVertex3f( -0.5,  0.5,  0.5); 
+		glTexCoord2f(1.0f,1.0f);  	glVertex3f( 0.5,  0.5, 0.5 ); //face tras
+		glTexCoord2f(1.0f,0.0f);	glVertex3f( 0.5,  -0.5, 0.5 ); 
+		glTexCoord2f(0.0f,0.0f);   	glVertex3f( -0.5,  -0.5, 0.5 ); 
+		glTexCoord2f(0.0f,1.0f);  	glVertex3f( -0.5,  0.5,  0.5); 
 		glEnd();
 		glBegin(GL_QUADS);
-		 	glVertex3f( 0.5,  0.5, -0.5 ); //face frente;
-			glVertex3f( 0.5,  -0.5, -0.5 ); 
-			glVertex3f( -0.5,  -0.5, -0.5 ); 
-			glVertex3f( -0.5,  0.5,  -0.5); 
+		glTexCoord2f(1.0f,1.0f); 	glVertex3f( 0.5,  0.5, -0.5 ); //face frente;
+		glTexCoord2f(1.0f,0.0f);	glVertex3f( 0.5,  -0.5, -0.5 ); 
+		glTexCoord2f(0.0f,0.0f);	glVertex3f( -0.5,  -0.5, -0.5 ); 
+		glTexCoord2f(0.0f,1.0f);	glVertex3f( -0.5,  0.5,  -0.5); 
 		glEnd();
 		glBegin(GL_QUADS);
-		  	glVertex3f( 0.5,  -0.5, 0.5 );  // face baixo
-			glVertex3f( 0.5,  -0.5, -0.5 ); 
-		    glVertex3f( -0.5,  -0.5, -0.5 ); 
-		    glVertex3f( -0.5,  -0.5,  0.5); 
+		glTexCoord2f(1.0f,1.0f);  	glVertex3f( 0.5,  -0.5, 0.5 );  // face baixo
+		glTexCoord2f(1.0f,0.0f);	glVertex3f( 0.5,  -0.5, -0.5 ); 
+		glTexCoord2f(0.0f,0.0f);   glVertex3f( -0.5,  -0.5, -0.5 ); 
+		glTexCoord2f(0.0f,1.0f);    glVertex3f( -0.5,  -0.5,  0.5); 
 		glEnd();
 		glBegin(GL_QUADS);
-		  	glVertex3f( -0.5,  0.5, 0.5 ); //face direita;//
-			glVertex3f( -0.5,  -0.5, 0.5 ); 
-			glVertex3f( -0.5,  -0.5, -0.5 ); 
-			glVertex3f( -0.5,  0.5,  -0.5); 
+		glTexCoord2f(1.0f,1.0f);  	glVertex3f( -0.5,  0.5, 0.5 ); //face direita;//
+		glTexCoord2f(1.0f,0.0f);	glVertex3f( -0.5,  -0.5, 0.5 ); 
+		glTexCoord2f(0.0f,0.0f);	glVertex3f( -0.5,  -0.5, -0.5 ); 
+		glTexCoord2f(0.0f,1.0f);	glVertex3f( -0.5,  0.5,  -0.5); 
 		glEnd();
+		glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 	glPushMatrix();        //perna 1
 		glColor4f(0,1,0,1);
@@ -834,15 +879,19 @@ void drawScene(){
 		glEnd();
 	glPopMatrix();
 	glTranslatef(9,9,9);
+	glEnable(GL_TEXTURE_2D); 
+	glBindTexture(GL_TEXTURE_2D,texture[5]);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glutSolidTeapot(0.5);
+	glDisable(GL_TEXTURE_2D);
 }
-void girodisp(void){
-	giro += 1;
+void girodisp(int i){
+	giro += 2;
 	if (giro > 360.0){
 		giro -= 360.00;
 	}                                                                
-		
 	glutPostRedisplay();    
+	glutTimerFunc(msec,girodisp,1);
 }
 
 void display(void){
@@ -943,7 +992,7 @@ int main(int argc, char** argv){
 	glutCreateWindow (" |Andar-'Cima' 'Baixo'|    |Rodar -'Esquerda/Direita'|   |Para Cima -'W'| |Para Baixo -'S'| ");
   
 	inicializa();
-	glutIdleFunc(girodisp);   
+	glutTimerFunc(msec,girodisp,1);   
 
 
 	glutSpecialFunc(teclasNotAscii); 
